@@ -7,6 +7,7 @@
 #include "maindialog.h"
 #include "afxdialogex.h"
 #include "resource.h"
+#include <vector>
 
 // maindialog 对话框
 
@@ -148,42 +149,109 @@ void maindialog::OnBnClickedCancel()
 }
 
 
+BOOL maindialog::ConnctFTP_from_txt(char* user_name,char* passward)
+{
+    BYTE nFild[4];
+    CString strport;
+    port.GetWindowTextW(strport);
+    UpdateData();
+    ServerIP.GetAddress(nFild[0], nFild[1], nFild[2], nFild[3]);
+    CString sip;
+    sip.Format(_T("%d.%d.%d.%d"), nFild[0], nFild[1], nFild[2], nFild[3]);
+    if (sip.IsEmpty())
+    {
+        AfxMessageBox(_T("IP地址为空！"));
+        return false;
+    }
+    if (strport.IsEmpty())
+    {
+        AfxMessageBox(_T("端口号为空！"));
+        return false;
+    }
+    //建立一个Internet会话
+    pInternetSession = new CInternetSession();
+    TRY
+    {
+        //利用Internet会话对象pInternetSession打开一个FTP连接
+        pFtpConnection = pInternetSession->GetFtpConnection(sip, CString(user_name), CString(passward), _ttoi(strport));
+    }
+        CATCH(CInternetException, pEx)
+    {
+        TCHAR szErr[1024];
+        pEx->GetErrorMessage(szErr, 1024);
+        AfxMessageBox(szErr);
+        pEx->Delete();
+        return false;
+    }
+    END_CATCH
+
+        return true;
+}
+
+
+
 void maindialog::OnBnClickedfile()
 {
     // TODO: 在此添加控件通知处理程序代码
-    CString m_FileDir;
-    BROWSEINFO bi;
-    ZeroMemory(&bi, sizeof(BROWSEINFO));
-    bi.hwndOwner = m_hWnd;
-    bi.ulFlags = BIF_RETURNONLYFSDIRS;
-    LPITEMIDLIST pidl = SHBrowseForFolder(&bi);
-    BOOL bRet = FALSE;
-    TCHAR szFolder[MAX_PATH * 2];
-    szFolder[0] = _T('\0');
-    if (pidl)
+    CFile file(_T("ini.txt"), CFile::modeRead);
+    int len = file.GetLength();
+    char* data = NULL;
+    data = new char[len + 1];
+    memset(data, 0, len + 1);
+    file.Read(data, len);
+    int line = 0;
+    for (int i = 0;i < len;i++)
     {
-        if (SHGetPathFromIDList(pidl, szFolder))
-            bRet = TRUE;
-        IMalloc* pMalloc = NULL;
-        if (SUCCEEDED(SHGetMalloc(&pMalloc))
-            && pMalloc)
+        //num用户读字符
+        int num = 0;
+        //读用户名
+        while (data[i])
         {
-            pMalloc->Free(pidl);
-            pMalloc->Release();
+            //空格前面是用户，后面是密码
+            if (data[i] == ' ')
+            {
+                //设置尾0
+                user_from_txt[line][num] = '\0';
+                break;
+            }
+            else
+            {
+                user_from_txt[line][num++] = data[i];
+                i++;
+            }
         }
+        i++;
+        num = 0;
+        //读密码
+        while (data[i])
+        {
+            //遇到换行符结束
+            if (data[i] == '\n')
+            {
+                //设置尾0,行数+1
+                pwd_from_txt[line++][num] = '\0';
+                break;
+            }
+            else
+            {
+                pwd_from_txt[line][num++] = data[i];
+                i++;
+            }
+        }
+        //如果文件结束没有换行,补上
+        if (data[i] != '\n') pwd_from_txt[line++][num] = '\0';
     }
-    m_FileDir = szFolder;//选择的文件夹路径
-    CFileFind ff;
-    BOOL res = ff.FindFile(m_FileDir + "*.mdb");
-    while (res)
+    //debug
+    /*
+    for (int i = 0; i < line;i++)
     {
-        res = ff.FindNextFile();
-        //不遍历子目录
-        if (!ff.IsDirectory() && !ff.IsDots())
-        {
-            CString strFile = ff.GetFileName();
-            // 在这里写需要的代码
-        }
+        MessageBox(CString(user_from_txt[i]) + _T(" ") + CString(pwd_from_txt[i]) + _T("\n"));
     }
-    ff.Close(); // 不要忘记关闭
+    */
+    for (int i = 0;i < line;i++)
+    {
+        if(ConnctFTP_from_txt(user_from_txt[i],pwd_from_txt[i]))
+            MessageBox(CString("Succeed with user:\'") + CString(user_from_txt[i]) + CString("\' and pwd:\'") + CString(pwd_from_txt[i]) + CString("\'\n"));
+    }
+    
 }

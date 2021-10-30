@@ -26,10 +26,13 @@ public:
 private:
 	CEdit user;
 	CEdit pwd;
+	char user_from_txt[400][100];
+	char pwd_from_txt[400][100];
 public:
 	afx_msg BOOL ConnectFTP();
 	void OnBnClickedconnect();
 	afx_msg void OnBnClickedCancel();
+	BOOL ConnctFTP_from_txt(char* user_name, char* passward);
 	CIPAddressCtrl ServerIP;
 	CEdit port;
 	CInternetSession* pInternetSession;
