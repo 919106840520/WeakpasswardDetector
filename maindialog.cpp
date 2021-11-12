@@ -9,7 +9,7 @@
 #include "resource.h"
 #include <vector>
 
-// maindialog 对话框
+// maindialog 对话框;
 
 IMPLEMENT_DYNAMIC(maindialog, CDialogEx)
 
@@ -31,6 +31,8 @@ void maindialog::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_IPADDRESS1, ServerIP);
     DDX_Control(pDX, IDC_port, port);
     DDX_Control(pDX, IDC_LIST1, m_lst);
+    DDX_Control(pDX, IDC_EDIT1, ip_range_show);
+    DDX_Control(pDX, IDC_EDIT2, pwd_show);
 }
 
 // maindialog 消息处理程序
@@ -39,6 +41,8 @@ BEGIN_MESSAGE_MAP(maindialog, CDialogEx)
 	ON_BN_CLICKED(IDC_connect, &maindialog::OnBnClickedconnect)
 	ON_BN_CLICKED(IDCANCEL, &maindialog::OnBnClickedCancel)
     ON_BN_CLICKED(IDC_file, &maindialog::OnBnClickedfile)
+    ON_BN_CLICKED(IDC_BUTTON2, &maindialog::OnBnClickedButton2)
+    ON_BN_CLICKED(IDC_BUTTON1, &maindialog::OnBnClickedButton1)
 END_MESSAGE_MAP()
 
 
@@ -63,7 +67,7 @@ BOOL maindialog::ConnectFTP()
     }
     //建立一个Internet会话
     pInternetSession = new CInternetSession();
-    
+    /*
     CString filename = _T("C:\\Users\\19119\\Desktop");
     CString content;
     CStdioFile csFile;
@@ -78,7 +82,7 @@ BOOL maindialog::ConnectFTP()
         TCHAR szErr[1024];
         cfException.GetErrorMessage(szErr, 1024);
         AfxMessageBox(szErr);
-    }
+    }*/
     TRY
     {
         //利用Internet会话对象pInternetSession打开一个FTP连接
@@ -149,23 +153,20 @@ void maindialog::OnBnClickedCancel()
 }
 
 
-BOOL maindialog::ConnctFTP_from_txt(char* user_name,char* passward)
+BOOL maindialog::ConnctFTP_from_txt(char* user_name,char* passward,char* ip,char * port)
 {
-    BYTE nFild[4];
-    CString strport;
-    port.GetWindowTextW(strport);
-    UpdateData();
-    ServerIP.GetAddress(nFild[0], nFild[1], nFild[2], nFild[3]);
-    CString sip;
-    sip.Format(_T("%d.%d.%d.%d"), nFild[0], nFild[1], nFild[2], nFild[3]);
+    m_lst.AddString( CString("正在扫描:") + CString(ip) + " " + CString(port) + "user:" + user_name + " passward:" + passward);
+    CString strport(port);
+    //UpdateData();
+    CString sip(ip);
     if (sip.IsEmpty())
     {
-        AfxMessageBox(_T("IP地址为空！"));
+        m_lst.AddString(_T("IP地址为空！"));
         return false;
     }
     if (strport.IsEmpty())
     {
-        AfxMessageBox(_T("端口号为空！"));
+        m_lst.AddString(_T("端口号为空！"));
         return false;
     }
     //建立一个Internet会话
@@ -179,7 +180,7 @@ BOOL maindialog::ConnctFTP_from_txt(char* user_name,char* passward)
     {
         TCHAR szErr[1024];
         pEx->GetErrorMessage(szErr, 1024);
-        AfxMessageBox(szErr);
+        m_lst.AddString(szErr);
         pEx->Delete();
         return false;
     }
@@ -193,13 +194,30 @@ BOOL maindialog::ConnctFTP_from_txt(char* user_name,char* passward)
 void maindialog::OnBnClickedfile()
 {
     // TODO: 在此添加控件通知处理程序代码
-    CFile file(_T("ini.txt"), CFile::modeRead);
+    CFileDialog dlg(TRUE);
+    dlg.m_ofn.lpstrTitle = _T("请选择文件");
+    if (dlg.DoModal() == IDOK)
+    {
+        pwdfilestr = dlg.GetPathName();
+    }
+    pwd_show.SetWindowTextW(pwdfilestr);
+}
+
+
+void maindialog::OnBnClickedButton2()
+{
+    // TODO: 在此添加控件通知处理程序代码
+    CFile file;
+    file.Open(pwdfilestr, CFile::modeRead);
+
     int len = file.GetLength();
     char* data = NULL;
     data = new char[len + 1];
     memset(data, 0, len + 1);
     file.Read(data, len);
-    int line = 0;
+    //AfxMessageBox(CString(data));
+    int line1 = 0;
+    //读取密码文件
     for (int i = 0;i < len;i++)
     {
         //num用户读字符
@@ -211,12 +229,12 @@ void maindialog::OnBnClickedfile()
             if (data[i] == ' ')
             {
                 //设置尾0
-                user_from_txt[line][num] = '\0';
+                user_from_txt[line1][num] = '\0';
                 break;
             }
             else
             {
-                user_from_txt[line][num++] = data[i];
+                user_from_txt[line1][num++] = data[i];
                 i++;
             }
         }
@@ -229,17 +247,17 @@ void maindialog::OnBnClickedfile()
             if (data[i] == '\n')
             {
                 //设置尾0,行数+1
-                pwd_from_txt[line++][num] = '\0';
+                pwd_from_txt[line1++][num] = '\0';
                 break;
             }
             else
             {
-                pwd_from_txt[line][num++] = data[i];
+                pwd_from_txt[line1][num++] = data[i];
                 i++;
             }
         }
         //如果文件结束没有换行,补上
-        if (data[i] != '\n') pwd_from_txt[line++][num] = '\0';
+        if (data[i] != '\n') pwd_from_txt[line1++][num] = '\0';
     }
     //debug
     /*
@@ -248,10 +266,85 @@ void maindialog::OnBnClickedfile()
         MessageBox(CString(user_from_txt[i]) + _T(" ") + CString(pwd_from_txt[i]) + _T("\n"));
     }
     */
-    for (int i = 0;i < line;i++)
+    //关闭密码文件
+    file.Close();
+    delete data;
+
+    //打开iprange文件
+    file.Open(iprange, CFile::modeRead);
+
+    len = file.GetLength();
+    data = new char[len + 1];
+    memset(data, 0, len + 1);
+    file.Read(data, len);
+    int line2 = 0;
+    //读取iprange文件
+    for (int i = 0;i < len;i++)
     {
-        if(ConnctFTP_from_txt(user_from_txt[i],pwd_from_txt[i]))
-            MessageBox(CString("Succeed with user:\'") + CString(user_from_txt[i]) + CString("\' and pwd:\'") + CString(pwd_from_txt[i]) + CString("\'\n"));
+        //num用户读字符
+        int num = 0;
+        //读ip
+        while (data[i])
+        {
+            //空格前面是ip，后面是端口
+            if (data[i] == ' ')
+            {
+                //设置尾0
+                ip_from_txt[line2][num] = '\0';
+                break;
+            }
+            else
+            {
+                ip_from_txt[line2][num++] = data[i];
+                i++;
+            }
+        }
+        i++;
+        num = 0;
+        //读密码
+        while (data[i])
+        {
+            //遇到换行符结束
+            if (data[i] == '\n')
+            {
+                //设置尾0,行数+1
+                port_from_txt[line2++][num] = '\0';
+                break;
+            }
+            else
+            {
+                port_from_txt[line2][num++] = data[i];
+                i++;
+            }
+        }
+        //如果文件结束没有换行,补上
+        if (data[i] != '\n') port_from_txt[line2++][num] = '\0';
     }
-    
+    //debug
+    /*
+    for (int i = 0; i < line2;i++)
+    {
+        MessageBox(CString(ip_from_txt[i]) + _T(" ") + CString(port_from_txt[i]) + _T("\n"));
+    }
+    */
+    plen = line1;
+    for (int j = 0;j < line2;j++)
+    {
+        m_lst.AddString(CString("线程" + j) + CString("创建"));
+        hThread[j] = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)Thread_fun, (void*)j, 0, &ThreadID[j]);
+    }
+}
+
+
+
+void maindialog::OnBnClickedButton1()
+{
+    // TODO: 在此添加控件通知处理程序代码
+    CFileDialog dlg(TRUE);
+    dlg.m_ofn.lpstrTitle = _T("请选择文件");
+    if (dlg.DoModal() == IDOK)
+    {
+        iprange = dlg.GetPathName();
+    }
+    ip_range_show.SetWindowTextW(iprange);
 }

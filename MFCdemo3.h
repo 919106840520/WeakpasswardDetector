@@ -9,10 +9,10 @@
 
 #include "resource.h"       // 主符号
 
-
 // CMFCdemo3App:
 // 有关此类的实现，请参阅 MFCdemo3.cpp
 //
+
 
 class CMFCdemo3App : public CWinApp
 {

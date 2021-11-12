@@ -1,3 +1,9 @@
-﻿  maindialog.cpp
-C:\Users\19119\Desktop\All\MFCdemo3\maindialog.cpp(197,13): warning C4244: “初始化”: 从“ULONGLONG”转换到“int”，可能丢失数据
+﻿  MFCdemo3.cpp
+  MFCdemo3Doc.cpp
+  MFCdemo3View.cpp
+  MainFrm.cpp
+  maindialog.cpp
+C:\Users\19119\Desktop\All\MFCdemo3\maindialog.cpp(213,13): warning C4244: “初始化”: 从“ULONGLONG”转换到“int”，可能丢失数据
+C:\Users\19119\Desktop\All\MFCdemo3\maindialog.cpp(276,25): warning C4244: “=”: 从“ULONGLONG”转换到“int”，可能丢失数据
+  正在生成代码...
   MFCdemo3.vcxproj -> C:\Users\19119\Desktop\All\MFCdemo3\Debug\MFCdemo3.exe
