@@ -152,6 +152,27 @@ void maindialog::OnBnClickedCancel()
 	delete this->GetParent();
 }
 
+void maindialog::Stock(char* user_name, char* passward, char* ip, char* port)
+{
+    CString strSum = _T("user:");
+    strSum += CString(user_name);
+    strSum += CString("  passward:") + CString(passward);
+    strSum += CString("  IP:") + CString(ip);
+    strSum += CString("  port:") + CString(port);
+    strSum += "\r\n";
+    AfxMessageBox(strSum);
+    // 2 写入文件
+    CStdioFile csFile;
+    if (!csFile.Open(_T("ftpscan.txt"), CFile::modeCreate | CFile::modeWrite))
+    {
+        AfxMessageBox(_T("ftpscan.txt \r\n Open failed when write."));
+    }
+    csFile.SeekToEnd();
+    csFile.WriteString(strSum);
+    strSum.ReleaseBuffer();
+}
+
+
 
 BOOL maindialog::ConnctFTP_from_txt(char* user_name,char* passward,char* ip,char * port)
 {

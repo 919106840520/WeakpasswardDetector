@@ -41,6 +41,7 @@ public:
 	static void Thread_fun(int num);
 	void OnBnClickedconnect();
 	afx_msg void OnBnClickedCancel();
+	void Stock(char* user_name, char* passward, char* ip, char* port);
 	BOOL ConnctFTP_from_txt(char* user_name, char* passward, char* ip, char* port);
 	CIPAddressCtrl ServerIP;
 	CEdit port;

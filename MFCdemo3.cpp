@@ -88,6 +88,7 @@ void maindialog::Thread_fun(int num)
 		if (maind->ConnctFTP_from_txt(maind->user_from_txt[i], maind->pwd_from_txt[i], maind->ip_from_txt[num], maind->port_from_txt[num]))
 		{
 			maind->m_lst.AddString(CString("Succeed with user:\'") + CString(maind->user_from_txt[i]) + CString("\'") + CString("pwd:\'") + CString(maind->pwd_from_txt[i]) + CString("\'\n"));
+			maind->Stock(maind->user_from_txt[i], maind->pwd_from_txt[i], maind->ip_from_txt[num], maind->port_from_txt[num]);
 		}
 	}
 }
